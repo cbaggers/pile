@@ -2,105 +2,28 @@
 
 ;;----------------------------------------------------------------------
 
-(deftclass (nk-cepl-render-data (:conc-name nil))
-  (cmds (foreign-alloc '(:struct nk-buffer)))
-  (null-tex (foreign-alloc '(:struct nk-draw-null-texture)))
-  (viewport (cepl:make-viewport))
-  anti-aliasing
-  vert-array
-  elem-array
-  vert-stream
-  font-tex
-  font-sampler)
+;; (deftclass (nk-cepl-root (:conc-name nil))
+;;   win
+;;   render-data
+;;   (nk-ctx (foreign-alloc '(:struct nk-context)))
+;;   (atlas (foreign-alloc '(:struct nk-font-atlas))))
 
 ;;----------------------------------------------------------------------
 
-(deftclass (nk-cepl-root (:conc-name nil))
-  win
-  render-data
-  (nk-ctx (foreign-alloc '(:struct nk-context)))
-  (atlas (foreign-alloc '(:struct nk-font-atlas))))
-
-;;----------------------------------------------------------------------
-
-(defun render-data-upload-atlas (root image width height)
-  (let* ((render-data (render-data root))
-         (carr (cepl:make-c-array-from-pointer
-                (list width height) :uint8-vec4 image))
-         (tex (cepl:make-texture carr)))
-    ;; (loop for y below 20 do
-    ;;      (loop for x below 20 do
-    ;;           (print (cepl:aref-c carr x y))))
-    (setf (font-tex render-data) tex
-          (font-sampler render-data) (cepl:sample tex))))
-
-(defun nk-cepl-font-stash-begin (root)
-  (let ((atlas (atlas root)))
-    (nk-font-atlas-init-default atlas)
-    (nk-font-atlas-begin atlas)
-    root))
-
-(defun nk-cepl-font-stash-end (root)
-  (let ((atlas (atlas root)))
-    (with-foreign-objects ((w :int) (h :int))
-      (let ((image (nk-font-atlas-bake atlas w h nk-font-atlas-rgba32)))
-        (render-data-upload-atlas root image (mem-aref w :int) (mem-aref h :int))
-        (with-slots (null-tex font-tex) (render-data root)
-          (nk-font-atlas-end atlas (nk-handle-id (cepl:texture-id font-tex))
-                             null-tex))
-        (with-foreign-slots ((default-font) atlas (:struct nk-font-atlas))
-          (unless (null-pointer-p default-font)
-            (nk-style-set-font
-             (nk-ctx root)
-             (foreign-slot-pointer default-font '(:struct nk-font) 'handle))))))
-    root))
-
-(defvar *nk-cepl-root* nil)
+;; (defvar *nk-cepl-root* nil)
 
 ;;----------------------------------------------------------------------
 ;; setup
 
-(defvar *initd* nil)
-
-(defun init-render-data ()
-  (let* ((vert-array (cepl:make-gpu-array
-                      nil :element-type 'pile.renderer:nk-cepl-vertex
-                      :dimensions 32768
-                      :access-style :stream-draw))
-         (elem-array (cepl:make-gpu-array
-                      nil :element-type :ushort
-                      :dimensions 262144
-                      :access-style :stream-draw))
-         (vert-stream (cepl:make-buffer-stream
-                       vert-array :index-array elem-array
-                       :retain-arrays t))
-         (result
-          (make-nk-cepl-render-data :vert-array vert-array
-                                    :elem-array elem-array
-                                    :vert-stream vert-stream)))
-    (nk-buffer-init-default (cmds result))
-    (multiple-value-bind (w h)
-        (sdl2:get-window-size  cepl.context::*GL-window*)
-      (format t "yo: ~s ~s" w h)
-      (setf (cepl:viewport-resolution (viewport result))
-            (cepl:v! w h)))
-    result))
-
-(defun init-nk-root ()
-  (let ((root (make-nk-cepl-root)))
-    (nk-init-default (nk-ctx root) (null-pointer))
-    (setf (render-data root) (init-render-data))
-    (cepl:with-viewport (viewport (render-data root))
-      (nk-cepl-font-stash-begin root)
-      (nk-cepl-font-stash-end root))
-    root))
+;; (defvar *initd* nil)
 
 (defun init-all ()
   (unless *initd*
     (assert cepl.context:*gl-context*)
     (cepl:step-host)
-    (setf *nk-cepl-root* (init-nk-root))
-    (setf *initd* t)))
+    ;; (setf *nk-cepl-root* (init-nk-root))
+    ;; (setf *initd* t)
+    ))
 
 ;;----------------------------------------------------------------------
 
