@@ -1,4 +1,4 @@
 ;;;; package.lisp
 
-(defpackage #:test-ui-stuff
-  (:use #:cl #:structy-defclass #:pile))
+(uiop:define-package #:test-ui-stuff
+  (:use #:cl #:structy-defclass #:pile #:cepl))

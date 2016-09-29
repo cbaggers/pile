@@ -27,14 +27,13 @@
         (when (button-label :text "In Lisp!")
           (print "Hot damn!")))
       (in-row-dynamic (:height 20s0)
-        (property-int "JUICE!" :min 0 :max 100 :step 10))
+        (property-int :text "JUICE!" :min 0 :max 100 :step 10))
       (in-row-dynamic (:height 120s0)
         (color-picker :color (v! 28 45 62 0) :format :rgba)))
     ;;
     (gl:clear :color-buffer-bit)
-    (render-ui *nk-cepl-root*)
+    (render-ui *ui-root*)
     (cepl:swap)))
-
 
 (defun run-loop (&optional (count 0))
   (assert (>= count 0))
@@ -67,5 +66,6 @@
   (stop-loop))
 
 (defun mouse-listener (event timestamp)
+  (declare (ignore timestamp))
   (let* ((d (skitter:xy-pos-vec event)))
     d))

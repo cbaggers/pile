@@ -1,10 +1,12 @@
 ;;;; package.lisp
 
-(defpackage #:pile.renderer
+(uiop:define-package #:pile.renderer
   (:use #:cl #:cepl :cffi)
   (:export :nk-basic :nk-cepl-vertex))
 
-(defpackage #:pile
-  (:use #:cl #:structy-defclass :cffi #:raw-bindings-nuklear
+(uiop:define-package :pile
+  (:use :cl :structy-defclass :cffi :raw-bindings-nuklear
         :cffi :alexandria)
-  (:export :init-all :reshape :step-ui))
+  (:export :make-root-element :reshape :with-context :render-ui
+           :in-input :in-panel :in-row-static :in-row-dynamic :in-row-dynamic
+           :property-int :button-label :color-picker))

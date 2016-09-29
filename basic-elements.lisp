@@ -6,8 +6,7 @@
 
 (defmacro with-context (root-element &body body)
   `(let ((,+ctx+ (make-context-from-root-element ,root-element)))
-     (declare (dynamic-extent ,+ctx+))
-     ,@body body))
+     ,@body))
 
 ;;------------------------------------------------------------
 
@@ -32,15 +31,15 @@
                    (window-flags flags)
                    flags)))
     (with-gensyms (elem layout)
-      `(let ((,elem (make-pile-nk-ptr-element :ptr ,layout)))
-         (declare (dynamic-extent ,elem))
-         (when (= 1 (%nk-begin ,+ctx+ ,title ,bounds ,flags))
-           (unwind-protect
-                (progn
-                  (pile-push ,elem ,+ctx+)
-                  ,@body)
-             (pile-pop ,+ctx+)
-             (nk-end (pile-root ,+ctx+))))))))
+      `(with-foreign-object (,layout '(:struct nk-panel))
+         (let ((,elem (make-pile-nk-ptr-element :ptr ,layout)))
+           (when (= 1 (%nk-begin ,+ctx+ ,layout ,title ,bounds ,flags))
+             (unwind-protect
+                  (progn
+                    (pile-push ,elem ,+ctx+)
+                    ,@body)
+               (pile-pop ,+ctx+)
+               (nk-end (pile-root ,+ctx+)))))))))
 
 ;; This sucks, make proper readers etc
 (defun vec4-as-rect (v4)
@@ -62,13 +61,12 @@
                (logior x val))))
     (reduce #'val flags :initial-value 0)))
 
-(defun %nk-begin (context title bounds-v4 flags)
+(defun %nk-begin (context layout title bounds-v4 flags)
   (assert (typep bounds-v4 'rtg-math.types:vec4))
-  (with-foreign-object (layout '(:struct nk-panel))
-    (with-foreign-string (c-title title)
-      (nk-begin (pile-root context) layout c-title
-                (vec4-as-rect bounds-v4)
-                (if (numberp flags) flags (window-flags flags))))))
+  (with-foreign-string (c-title title)
+    (nk-begin (pile-root context) layout c-title
+              (vec4-as-rect bounds-v4)
+              (if (numberp flags) flags (window-flags flags)))))
 
 ;;------------------------------------------------------------
 
@@ -82,26 +80,22 @@
                          &body body)
   (with-gensyms (elem)
     `(let ((,elem (make-pile-row-element :name :row-static)))
-       (declare (dynamic-extent ,elem))
        (unwind-protect
             (progn
               (pile-push ,elem ,+ctx+)
               (nk-layout-row-static nk-ctx ,height ,item-width ,cols)
               ,@body)
-         (pile-pop ,+ctx+))
-       ,@body)))
+         (pile-pop ,+ctx+)))))
 
 (defmacro in-row-dynamic ((&key (height 30s0) (cols 1)) &body body)
   (with-gensyms (elem)
     `(let ((,elem (make-pile-row-element :name :row-dynamic)))
-       (declare (dynamic-extent ,elem))
        (unwind-protect
             (progn
               (pile-push ,elem ,+ctx+)
               (nk-layout-row-dynamic nk-ctx ,height ,cols)
               ,@body)
-         (pile-pop ,+ctx+))
-       ,@body)))
+         (pile-pop ,+ctx+)))))
 
 ;;------------------------------------------------------------
 

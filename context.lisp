@@ -1,21 +1,5 @@
 (in-package :pile)
 
-(defstruct pile-element)
-
-(defstruct pile-semantic-element
-  (name (error "semantic element must have a name") :type keyword))
-
-(defstruct (pile-site-element (:include pile-semantic-element)))
-
-(define-constant +null-element+
-    (or (when (boundp '+null-element+)
-          (symbol-value '+null-element+))
-        (make-pile-element)))
-
-(defstruct (pile-nk-ptr-element (:include pile-element))
-  (ptr (error "pointer to nk element must be provided")
-       :type cffi:foreign-pointer))
-
 (defstruct (pile-context (:constructor %make-pile-context))
   (root +null-element+ :type pile-element)
   (stack (make-array 20 :element-type 'pile-element
@@ -23,6 +7,11 @@
                      :fill-pointer 0
                      :adjustable t)
          :type (array pile-element (*))))
+
+(define-constant +null-element+
+    (or (when (boundp '+null-element+)
+          (symbol-value '+null-element+))
+        (make-pile-element)))
 
 (defun pile-root (context)
   (pile-context-root context))
