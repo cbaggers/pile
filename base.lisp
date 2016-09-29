@@ -131,33 +131,20 @@
                               nk-window-minimizable
                               nk-window-title))
 
-(defun step-ui ()
-  (with-slots (nk-ctx render-data) *nk-cepl-root*
-    (cepl:with-viewport (viewport render-data)
-      ;; input
-      (nk-input-begin nk-ctx)
-      (nk-input-end nk-ctx)
-      ;; gui
-      (with-foreign-objects ((layout '(:struct nk-panel))
-                             (val :int))
-        (setf (mem-aref val :int) 20)
-        (with-foreign-strings ((title "Nuklear UI")
-                               (blbl "In Lisp!")
-                               (juice "JUICE!:"))
-          (when (= 1 (nk-begin nk-ctx layout title *rect* *flags*))
-            (nk-layout-row-static nk-ctx 30s0 80 1)
-            (when (= 1 (nk-button-label nk-ctx blbl))
-              (print "Holy shite!"))
-            (nk-layout-row-dynamic nk-ctx 20s0 1)
-            (nk-property-int nk-ctx juice 0 val 100 10 1s0)
-            (nk-layout-row-dynamic nk-ctx 120s0 1)
-            (nk-color-picker nk-ctx '(r 28 g 48 b 62 a 0) nk-rgba)
-            (nk-end nk-ctx))))
-      ;; draw
-      ;;(cepl:clear)
-      (gl:clear :color-buffer-bit)
-      (gl:clear-color 0.109 0.188 0.243 0s0)
-      (render-ui *nk-cepl-root*)))
+(defun step-ui-new (r-elem)
+  (with-context r-elem
+    (in-input)
+    (in-panel (:title "Nuklear UI" :bounds (v! 200s0 200s0 210s0 250s0))
+      (in-row-static (:height 30s0 :item-width 80)
+        (when (button-label :text "In Lisp!")
+          (print "Hot damn!")))
+      (in-row-dynamic (:height 20s0)
+        (property-int "JUICE!" :min 0 :max 100 :step 10))
+      (in-row-dynamic (:height 120s0)
+        (color-picker :color (v! 28 45 62 0) :format :rgba)))
+    (gl:clear :color-buffer-bit)
+    (gl:clear-color 0.109 0.188 0.243 0s0)
+    (render-ui *nk-cepl-root*))
   (cepl:swap))
 
 (defun reshape (new-dimensions)

@@ -19,11 +19,10 @@
        :atlas atlas))))
 
 
-(defun make-context ()
+(defun make-context-from-root-element (root-elem)
   (assert cepl.context:*gl-context*)
-  (let ((ctx (make-pile-context))
-        (root-elem (make-root-element)))
-    (pile-push ctx root-elem)))
+  (let ((ctx (make-pile-context)))
+    (pile-push root-elem ctx)))
 
 
 
