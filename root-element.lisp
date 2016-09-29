@@ -25,6 +25,11 @@
     (pile-push root-elem ctx)))
 
 
+(defun reshape (root-element new-dimensions)
+  (let ((new-dimensions (cepl:v! (v:x new-dimensions) (v:y new-dimensions)))
+        (render-data (root-element-render-data root-element)))
+    (setf (cepl:viewport-resolution (viewport render-data))
+          new-dimensions)))
 
 
 ;;------------------------------------------------------------

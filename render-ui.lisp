@@ -1,34 +1,11 @@
 (in-package #:pile)
 
 ;;----------------------------------------------------------------------
+;;
 
-;; (deftclass (nk-cepl-root (:conc-name nil))
-;;   win
-;;   render-data
-;;   (nk-ctx (foreign-alloc '(:struct nk-context)))
-;;   (atlas (foreign-alloc '(:struct nk-font-atlas))))
-
-;;----------------------------------------------------------------------
-
-;; (defvar *nk-cepl-root* nil)
-
-;;----------------------------------------------------------------------
-;; setup
-
-;; (defvar *initd* nil)
-
-(defun init-all ()
-  (unless *initd*
-    (assert cepl.context:*gl-context*)
-    (cepl:step-host)
-    ;; (setf *nk-cepl-root* (init-nk-root))
-    ;; (setf *initd* t)
-    ))
-
-;;----------------------------------------------------------------------
-
-(defun render-ui (root)
-  (with-slots (nk-ctx render-data) root
+(defun render-ui (root-elem)
+  (let ((nk-ctx (pile-root root-elem))
+        (render-data (root-element-render-data root-elem)))
     (gl:blend-equation :func-add)
     (gl:blend-func :src-alpha :one-minus-src-alpha)
     (gl:enable :scissor-test :blend)
@@ -119,38 +96,5 @@
     ;;
     (gl:disable :scissor-test :blend)
     (gl:enable :depth-test :cull-face)))
-
-;;----------------------------------------------------------------------
-
-(defparameter *rect* '(h 250s0 w 210s0 y 200s0 x 200s0))
-
-(defparameter *flags* (logior nk-window-border
-                              nk-window-movable
-                              nk-window-closable
-                              nk-window-scalable
-                              nk-window-minimizable
-                              nk-window-title))
-
-(defun step-ui-new (r-elem)
-  (with-context r-elem
-    (in-input)
-    (in-panel (:title "Nuklear UI" :bounds (v! 200s0 200s0 210s0 250s0))
-      (in-row-static (:height 30s0 :item-width 80)
-        (when (button-label :text "In Lisp!")
-          (print "Hot damn!")))
-      (in-row-dynamic (:height 20s0)
-        (property-int "JUICE!" :min 0 :max 100 :step 10))
-      (in-row-dynamic (:height 120s0)
-        (color-picker :color (v! 28 45 62 0) :format :rgba)))
-    (gl:clear :color-buffer-bit)
-    (gl:clear-color 0.109 0.188 0.243 0s0)
-    (render-ui *nk-cepl-root*))
-  (cepl:swap))
-
-(defun reshape (new-dimensions)
-  (let ((new-dimensions (cepl:v! (v:x new-dimensions) (v:y new-dimensions))))
-    (print new-dimensions)
-    (setf (cepl:viewport-resolution (viewport (render-data *nk-cepl-root*)))
-          new-dimensions)))
 
 ;;----------------------------------------------------------------------
