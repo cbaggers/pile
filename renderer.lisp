@@ -1,4 +1,4 @@
-(in-package #:nuklear-graphics)
+(in-package #:pile.renderer)
 
 ;;----------------------------------------------------------------------
 

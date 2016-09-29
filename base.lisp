@@ -1,4 +1,4 @@
-(in-package #:luis-a-ui)
+(in-package #:pile)
 
 ;;----------------------------------------------------------------------
 
@@ -64,7 +64,7 @@
 
 (defun init-render-data ()
   (let* ((vert-array (cepl:make-gpu-array
-                      nil :element-type 'nuklear-graphics:nk-cepl-vertex
+                      nil :element-type 'pile.renderer:nk-cepl-vertex
                       :dimensions 32768
                       :access-style :stream-draw))
          (elem-array (cepl:make-gpu-array
@@ -97,16 +97,9 @@
 
 (defun init-all ()
   (unless *initd*
-    (unless cepl.context:*gl-context*
-      (cepl:repl))
+    (assert cepl.context:*gl-context*)
     (cepl:step-host)
     (setf *nk-cepl-root* (init-nk-root))
-    (skitter:listen-to (lambda (x y) (mouse-listener x y))
-                       (skitter:mouse 0) :pos)
-    (skitter:listen-to (lambda (x y) (system-listener x y))
-                       skitter:+system+ :quitting)
-    (skitter:listen-to (lambda (x y) (window-size-callback x y))
-                       (skitter:window 0) :size)
     (setf *initd* t)))
 
 ;;----------------------------------------------------------------------
@@ -122,35 +115,35 @@
       ;;
       (setf (mem-aref vert-layout '(:struct nk-draw-vertex-layout-element) 0)
             `(attribute ,nk-vertex-position
-                        test-c2ffi::format ,nk-format-float
+                        raw-bindings-nuklear::format ,nk-format-float
                         offset 0))
       ;;
       (setf (mem-aref vert-layout '(:struct nk-draw-vertex-layout-element) 1)
             `(attribute ,nk-vertex-texcoord
-                        test-c2ffi::format ,nk-format-float
+                        raw-bindings-nuklear::format ,nk-format-float
                         offset 8))
       ;;
       (setf (mem-aref vert-layout '(:struct nk-draw-vertex-layout-element) 2)
             `(attribute ,nk-vertex-color
-                        test-c2ffi::format ,nk-format-r8g8b8a8
+                        raw-bindings-nuklear::format ,nk-format-r8g8b8a8
                         offset 16))
       ;;
       (setf (mem-aref vert-layout '(:struct nk-draw-vertex-layout-element) 3)
             `(attribute ,nk-vertex-attribute-count
-                        test-c2ffi::format ,nk-format-count
+                        raw-bindings-nuklear::format ,nk-format-count
                         offset 0))
       ;;
       (with-foreign-object (config '(:struct nk-convert-config))
         (zero-out config '(:struct nk-convert-config))
         (with-foreign-slots
             ((vertex-layout
-              vertex-size vertex-alignment test-c2ffi::null
+              vertex-size vertex-alignment raw-bindings-nuklear::null
               circle-segment-count curve-segment-count arc-segment-count
               global-alpha shape-aa line-aa) config (:struct nk-convert-config))
           (setf vertex-layout vert-layout
                 vertex-size 20
                 vertex-alignment 1
-                test-c2ffi::null (null-tex render-data)
+                raw-bindings-nuklear::null (null-tex render-data)
                 circle-segment-count 22
                 curve-segment-count 22
                 arc-segment-count 22
@@ -193,7 +186,7 @@
                                  (* w scale-x) (* h scale-y)))
                    (setf (cepl:buffer-stream-length vert-stream) elem-count)
                    (setf (cepl.types::buffer-stream-start vert-stream) offset)
-                   (cepl:map-g #'nuklear-graphics:nk-basic
+                   (cepl:map-g #'pile.renderer:nk-basic
                                vert-stream
                                :tex (font-sampler render-data)
                                :proj-mtx ortho)
@@ -203,21 +196,6 @@
     ;;
     (gl:disable :scissor-test :blend)
     (gl:enable :depth-test :cull-face)))
-
-(defun carr-size (c-arr)
-  (assert (= 1 (length (cepl:c-array-dimensions c-arr))))
-  (cepl.types::c-array-row-byte-size c-arr))
-
-(defun garr-size (g-arr)
-  (cepl.types::gpu-array-bb-byte-size g-arr))
-
-(defun zero-out (ptr type &optional (count 1))
-  (%memset ptr 0 (* count (foreign-type-size type))))
-
-(defcfun (%memset "memset") :pointer
-  (destination-pointer :pointer)
-  (val :int)
-  (byte-length :long))
 
 ;;----------------------------------------------------------------------
 
@@ -230,7 +208,7 @@
                               nk-window-minimizable
                               nk-window-title))
 
-(defun step-example ()
+(defun step-ui ()
   (with-slots (nk-ctx render-data) *nk-cepl-root*
     (cepl:with-viewport (viewport render-data)
       ;; input
@@ -265,37 +243,4 @@
     (setf (cepl:viewport-resolution (viewport (render-data *nk-cepl-root*)))
           new-dimensions)))
 
-(defun window-size-callback (event timestamp)
-  (declare (ignore timestamp))
-  (reshape (skitter:size-2d-vec event)))
-
-(defun system-listener (event timestamp)
-  (declare (ignore event timestamp))
-  (stop-loop))
-
-(defun mouse-listener (event timestamp)
-  (let* ((d (skitter:xy-pos-vec event)))
-    d))
-
 ;;----------------------------------------------------------------------
-
-(defvar *running* nil)
-
-(defun run-loop (&optional (count 0))
-  (assert (>= count 0))
-  ;;
-  (init-all)
-  ;;
-  (setf *running* t)
-  (print "started")
-  (loop :do
-     (decf count)
-     (livesupport:update-repl-link)
-     (livesupport::continuable (cepl:step-host))
-     (livesupport::continuable (step-example))
-     :until (or (not *running*) (= (floor count) 0)))
-  (print "stopped")
-  (setf *running* nil))
-
-(defun stop-loop ()
-  (setf *running* nil))
