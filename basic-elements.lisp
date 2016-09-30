@@ -4,6 +4,31 @@
 
 ;;------------------------------------------------------------
 
+(defun make-root-element ()
+  (let ((nk-ctx (foreign-alloc '(:struct nk-context))))
+    (nk-init-default nk-ctx (null-pointer))
+    (let* ((render-data (init-render-data))
+           (atlas (init-fonts nk-ctx render-data))
+           (elem (%make-root-element
+                  :ptr nk-ctx
+                  :render-data render-data
+                  :atlas atlas))
+           (ws-listener (lambda (x y z) (mouse-pos-listener elem x y z)))
+           (mp-listener (lambda (x y z) (mouse-button-listener elem x y z)))
+           (mb-listener (lambda (x y z) (keyboard-listener elem x y z)))
+           (kb-listener (lambda (x y z) (window-size-callback elem x y z))))
+      (setf (root-element-window-size-listener elem) ws-listener
+            (root-element-mouse-pos-listener elem) mp-listener
+            (root-element-mouse-button-listener elem) mb-listener
+            (root-element-keyboard-listener elem) kb-listener)
+      (skitter:listen-to ws-listener (skitter:mouse 0) :pos)
+      (skitter:listen-to mp-listener (skitter:mouse 0) :button)
+      (skitter:listen-to mb-listener (skitter:keyboard 0) :button)
+      (skitter:listen-to kb-listener (skitter:window 0) :size)
+      elem)))
+
+;;------------------------------------------------------------
+
 ;; Maybe we allow the user to pass an existing the root element OR a context
 ;; this way we can make it easy to pass control to regular functions
 
@@ -138,6 +163,7 @@
   `(%color-picker ,+ctx+ ,color ,format))
 
 (defun %color-picker (context color format)
+  (declare (ignore format))
   (assert (typep (pile-head context) 'pile-site-element))
   ;; HMM we really need to be populating these color more efficiently
   color)

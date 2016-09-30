@@ -3,21 +3,22 @@
 
 (defstruct (root-element (:include pile-nk-ptr-element)
                          (:constructor %make-root-element))
+  ;; primary fields
   win
   render-data
-  atlas)
+  atlas
+  ;;
+  ;; events
+  (cached-events (make-array 20 :element-type t
+                             :initial-element nil
+                             :fill-pointer 0
+                             :adjustable t))
+  (window-size-listener nil)
+  (mouse-pos-listener nil)
+  (mouse-button-listener nil)
+  (keyboard-listener nil))
 
-
-(defun make-root-element ()
-  (let ((nk-ctx (foreign-alloc '(:struct nk-context))))
-    (nk-init-default nk-ctx (null-pointer))
-    (let* ((render-data (init-render-data))
-           (atlas (init-fonts nk-ctx render-data)))
-      (%make-root-element
-       :ptr nk-ctx
-       :render-data render-data
-       :atlas atlas))))
-
+;; constructor is in basic-elements.lisp
 
 (defun make-context-from-root-element (root-elem)
   (assert cepl.context:*gl-context*)

@@ -16,6 +16,7 @@
                (:file "element-types")
                (:file "context")
                (:file "root-element")
+               (:file "input")
                (:file "basic-elements")
                (:file "render-ui")
                (:file "ui-compiling-macros")))

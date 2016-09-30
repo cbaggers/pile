@@ -10,4 +10,5 @@
   (:export :make-root-element :reshape :in-ui :render-ui
            :in-input :in-panel :in-row :in-row-static
            :property-int :button-label :color-picker
+           :step-host-&-dispatch-events :dispatch-events
            :defui))

@@ -1,12 +1,14 @@
 (in-package :pile)
 
 (defstruct (pile-context (:constructor %make-pile-context))
-  (root (error "A root must be provided when making a pile-context") :type pile-element)
+  (root (error "A root must be provided when making a pile-context")
+        :type pile-element)
   (stack (make-array 20 :element-type 'pile-element
                      :initial-element +null-element+
                      :fill-pointer 0
                      :adjustable t)
          :type (array pile-element (*))))
+
 
 (define-constant +null-element+
     (or (when (boundp '+null-element+)
