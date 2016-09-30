@@ -4,17 +4,22 @@
 
 ;;------------------------------------------------------------
 
-(defmacro with-context (root-element &body body)
+;; Maybe we allow the user to pass an existing the root element OR a context
+;; this way we can make it easy to pass control to regular functions
+
+(defmacro in-ui (root-element &body body)
   `(let ((,+ctx+ (make-context-from-root-element ,root-element)))
-     ,@body))
+     (unwind-protect (progn ,@body)
+       (nk-clear (pile-nk-ptr ,+ctx+)))))
 
 ;;------------------------------------------------------------
 
 ;; what if not =1? silent fail is ugly
 (defmacro in-input (&body body)
-  `(when (= 1 (nk-input-begin (pile-root ,+ctx+)))
+  `(progn
+     (nk-input-begin (pile-nk-ptr ,+ctx+))
      (unwind-protect (progn ,@body)
-       (nk-input-end (pile-root ,+ctx+)))))
+       (nk-input-end (pile-nk-ptr ,+ctx+)))))
 
 ;;------------------------------------------------------------
 
@@ -26,7 +31,7 @@
                           (flags '(:border :movable :closable :scalable
                                    :minimizable :title)))
                     &body body)
-  (assert (stringp title))
+  (assert title)
   (let ((flags (if (every #'keywordp flags)
                    (window-flags flags)
                    flags)))
@@ -39,7 +44,7 @@
                     (pile-push ,elem ,+ctx+)
                     ,@body)
                (pile-pop ,+ctx+)
-               (nk-end (pile-root ,+ctx+)))))))))
+               (nk-end (pile-nk-ptr ,+ctx+)))))))))
 
 ;; This sucks, make proper readers etc
 (defun vec4-as-rect (v4)
@@ -63,8 +68,9 @@
 
 (defun %nk-begin (context layout title bounds-v4 flags)
   (assert (typep bounds-v4 'rtg-math.types:vec4))
+  (assert (stringp title))
   (with-foreign-string (c-title title)
-    (nk-begin (pile-root context) layout c-title
+    (nk-begin (pile-nk-ptr context) layout c-title
               (vec4-as-rect bounds-v4)
               (if (numberp flags) flags (window-flags flags)))))
 
@@ -83,17 +89,17 @@
        (unwind-protect
             (progn
               (pile-push ,elem ,+ctx+)
-              (nk-layout-row-static nk-ctx ,height ,item-width ,cols)
+              (nk-layout-row-static (pile-nk-ptr ,+ctx+) ,height ,item-width ,cols)
               ,@body)
          (pile-pop ,+ctx+)))))
 
-(defmacro in-row-dynamic ((&key (height 30s0) (cols 1)) &body body)
+(defmacro in-row ((&key (height 30s0) (cols 1)) &body body)
   (with-gensyms (elem)
     `(let ((,elem (make-pile-row-element :name :row-dynamic)))
        (unwind-protect
             (progn
               (pile-push ,elem ,+ctx+)
-              (nk-layout-row-dynamic nk-ctx ,height ,cols)
+              (nk-layout-row-dynamic (pile-nk-ptr ,+ctx+) ,height ,cols)
               ,@body)
          (pile-pop ,+ctx+)))))
 
@@ -105,24 +111,26 @@
 
 (defun %button-label (context text)
   (assert text)
-  (assert (typep (pile-peek context) 'pile-site-element))
+  (assert (typep (pile-head context) 'pile-site-element))
   (with-foreign-string (c-str text)
-    (nk-button-label (pile-root context) c-str)))
+    (= 1 (nk-button-label (pile-nk-ptr context) c-str))))
 
 ;;------------------------------------------------------------
 
 (defmacro property-int
-    (&key text (min -100) (max 100) (step 2) (inc-per-pixel 1s0))
+    (&key text val (min -100) (max 100) (step 2) (inc-per-pixel 1s0))
   (assert text)
-  `(%property-int ,+ctx+ ,text ,min ,max ,step ,inc-per-pixel))
+  `(%property-int ,+ctx+ ,text ,val ,min ,max ,step ,inc-per-pixel))
 
-(defun %property-int (context text min max step inc-per-pixel)
+(defun %property-int (context text val min max step inc-per-pixel)
   (assert text)
-  (assert (typep (pile-peek context) 'pile-site-element))
-  (with-foreign-string (c-str text)
-    (with-foreign-object (val :int)
-      (nk-property-int (pile-root context) c-str min val max step inc-per-pixel)
-      (mem-aref val :int))))
+  (assert (typep (pile-head context) 'pile-site-element))
+  (let ((lisp-val (or val min)))
+    (with-foreign-string (c-str text)
+      (with-foreign-object (val :int)
+        (setf (mem-aref val :int) lisp-val)
+        (nk-property-int (pile-nk-ptr context) c-str min val max step inc-per-pixel)
+        (mem-aref val :int)))))
 
 ;;------------------------------------------------------------
 
@@ -130,6 +138,11 @@
   `(%color-picker ,+ctx+ ,color ,format))
 
 (defun %color-picker (context color format)
-  (assert (typep (pile-peek context) 'pile-site-element))
+  (assert (typep (pile-head context) 'pile-site-element))
   ;; HMM we really need to be populating these color more efficiently
   color)
+
+;;------------------------------------------------------------
+
+(defmacro render-ui ()
+  `(%render-ui ,+ctx+))

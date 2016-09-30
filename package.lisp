@@ -7,6 +7,7 @@
 (uiop:define-package :pile
   (:use :cl :structy-defclass :cffi :raw-bindings-nuklear
         :cffi :alexandria)
-  (:export :make-root-element :reshape :with-context :render-ui
-           :in-input :in-panel :in-row-static :in-row-dynamic :in-row-dynamic
-           :property-int :button-label :color-picker))
+  (:export :make-root-element :reshape :in-ui :render-ui
+           :in-input :in-panel :in-row :in-row-static
+           :property-int :button-label :color-picker
+           :defui))

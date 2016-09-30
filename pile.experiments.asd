@@ -1,6 +1,6 @@
-;;;; pile-experiments.asd
+;;;; pile.experiments.asd
 
-(asdf:defsystem #:pile-experiments
+(asdf:defsystem #:pile.experiments
   :description "A place for me to test and play around with pile"
   :author "Chris Bagley <techsnuffle@gmail.com>"
   :license "GPL v3"

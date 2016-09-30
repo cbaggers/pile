@@ -2,7 +2,7 @@
 
 (defstruct pile-element)
 
-(defstruct pile-semantic-element
+(defstruct (pile-semantic-element (:include pile-element))
   (name (error "semantic element must have a name") :type keyword))
 
 (defstruct (pile-site-element (:include pile-semantic-element)))

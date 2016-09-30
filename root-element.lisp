@@ -5,7 +5,7 @@
                          (:constructor %make-root-element))
   win
   render-data
-  (atlas (foreign-alloc '(:struct nk-font-atlas))))
+  atlas)
 
 
 (defun make-root-element ()
@@ -21,8 +21,7 @@
 
 (defun make-context-from-root-element (root-elem)
   (assert cepl.context:*gl-context*)
-  (let ((ctx (make-pile-context)))
-    (pile-push root-elem ctx)))
+  (%make-pile-context :root root-elem))
 
 
 (defun reshape (root-element new-dimensions)
@@ -37,8 +36,7 @@
 
 (defun init-fonts (nk-ctx render-data)
   (cepl:with-viewport (viewport render-data)
-    (let ((atlas (font-stash-begin
-                  (foreign-alloc '(:struct nk-font-atlas)))))
+    (let ((atlas (font-stash-begin (foreign-alloc '(:struct nk-font-atlas)))))
       (font-stash-end nk-ctx atlas render-data))))
 
 (defun render-data-upload-atlas (render-data image width height)
@@ -50,7 +48,8 @@
 
 (defun font-stash-begin (atlas)
   (nk-font-atlas-init-default atlas)
-  (nk-font-atlas-begin atlas))
+  (nk-font-atlas-begin atlas)
+  atlas)
 
 (defun font-stash-end (nk-ctx atlas render-data)
   (with-foreign-objects ((w :int) (h :int))
