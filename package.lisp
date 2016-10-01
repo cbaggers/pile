@@ -9,6 +9,7 @@
         :cffi :alexandria)
   (:export :make-root-element :reshape :in-ui :render-ui
            :in-input :in-panel :in-row :in-row-static
-           :property-int :button-label :color-picker
+           :property-int :property-float :property-double
+           :button-label :color-picker :label
            :step-host-&-dispatch-events :dispatch-events
            :defui))

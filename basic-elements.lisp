@@ -151,6 +151,22 @@
 
 ;;------------------------------------------------------------
 
+(defmacro label (&key text (alignment :left))
+  (assert text)
+  `(%label ,+ctx+ ,text ,alignment))
+
+(defun %label (context text alignment)
+  (assert text)
+  (assert (typep (pile-head context) 'pile-site-element))
+  (let ((alignment (ecase alignment
+                     (:left nk-text-left)
+                     (:centered nk-text-centered)
+                     (:right nk-text-right))))
+    (with-foreign-string (c-str text)
+      (nk-label (pile-nk-ptr context) c-str alignment))))
+
+;;------------------------------------------------------------
+
 (defmacro button-label (&key text)
   (assert text)
   `(%button-label ,+ctx+ ,text))
@@ -177,6 +193,56 @@
         (setf (mem-aref val :int) lisp-val)
         (nk-property-int (pile-nk-ptr context) c-str min val max step inc-per-pixel)
         (mem-aref val :int)))))
+
+;;------------------------------------------------------------
+
+(defmacro property-float
+    (&key text val (min -100s0) (max 100s0) (step 2s0) (inc-per-pixel 1s0))
+  (assert text)
+  `(%property-float ,+ctx+ ,text ,val ,min ,max ,step ,inc-per-pixel))
+
+(defun %property-float (context text val min max step inc-per-pixel)
+  (assert text)
+  (assert (typep (pile-head context) 'pile-site-element))
+  (let ((lisp-val (float (or val min))))
+    (with-foreign-string (c-str text)
+      (with-foreign-object (val :float)
+        (setf (mem-aref val :float) lisp-val)
+        (nk-property-float (pile-nk-ptr context) c-str
+                           (float min) val (float max) (float step)
+                           inc-per-pixel)
+        (mem-aref val :float)))))
+
+;;------------------------------------------------------------
+
+(defmacro property-double
+    (&key text val (min -100d0) (max 100d0) (step 2d0) (inc-per-pixel 1s0))
+  (assert text)
+  `(%property-double ,+ctx+ ,text ,val ,min ,max ,step ,inc-per-pixel))
+
+(defun %property-double (context text val min max step inc-per-pixel)
+  (assert text)
+  (assert (typep (pile-head context) 'pile-site-element))
+  (let ((lisp-val (+ 0d0 (or val min))))
+    (with-foreign-string (c-str text)
+      (with-foreign-object (val :double)
+        (setf (mem-aref val :double) lisp-val)
+        (nk-property-double (pile-nk-ptr context) c-str
+                            (float min) val (float max) (float step)
+                            inc-per-pixel)
+        (mem-aref val :double)))))
+
+;;------------------------------------------------------------
+
+(defmacro progress (&key (current 0) (max 100) modifyable)
+  `(%progress ,+ctx+ ,current ,max ,modifyable))
+
+(defun %progress (context current max modifyable)
+  (assert (typep (pile-head context) 'pile-site-element))
+  (with-foreign-object (val :int)
+    (setf (mem-aref val :int) (floor current))
+    (nk-progress (pile-nk-ptr context) val max
+                 (if modifyable 1 0))))
 
 ;;------------------------------------------------------------
 

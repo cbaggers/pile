@@ -34,13 +34,17 @@
         (when (button-label :text "In Lisp!")
           (print "Hot damn!")))
       (in-row (:height 20s0)
-        (setf *some-val* (property-int :text "JUICE!" :val *some-val*
-                                       :min 0 :max 100 :step 10)))
+        (setf *some-val* (property-float :text "JUICE!" :val *some-val*
+                                         :min 0s0 :max 100s0 :step 0.1s0)))
       (in-row (:height 20s0)
         (property-int :text "Name" :min 0 :max 100 :step 10))
       (in-row (:height 20s0)
+        (pile::progress :current *some-val*))
+      (in-row (:height 20s0)
         (property-int :text "Thing" :min 0 :max 100 :step 10))
-      (in-row (:height 120s0)
+      (in-row (:height 20s0)
+        (label :text "A picker, so it is"))
+      (in-row (:height 220s0)
         (setf *some-color* (color-picker :color *some-color* :format :rgba))))
 
     (test-win :title "more" :x 50s0 :y 300s0)
@@ -48,7 +52,11 @@
     (test-win :title "yes" :x 250s0 :y 400s0)
 
     (render-ui)
-    (cepl:swap)))
+    (cepl:swap)
+    (gl:clear-color (/ (v:x *some-color*) 255)
+                    (/ (v:y *some-color*) 255)
+                    (/ (v:z *some-color*) 255)
+                    0)))
 
 (defun run-loop (&optional (count 0))
   (assert (>= count 0))
