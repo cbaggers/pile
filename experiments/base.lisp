@@ -22,7 +22,9 @@
     (in-row-static (:height 30s0 :item-width 180)
       (when (button-label :text "In Lisp!")
         (print "Hot damn!")))
-    (in-row (:height 40s0) (button-label :text "yup"))))
+    (in-row (:height 40s0) (button-label :text "yup"))
+    (in-row (:height 100s0)
+      (column-graph :data (loop for i below 10 :by 0.4 collect (sin i))))))
 
 (defun step-example ()
   (clear)
@@ -46,6 +48,8 @@
         (check-label :text "TWOOOO" :active nil))
       (in-row (:height 20s0)
         (text :val "Suup! Apparently"))
+      (in-row (:height 100s0)
+        (line-graph :data (loop for i below 10 :by 0.4 collect (sin i))))
       (in-row (:height 20s0)
         (setf *some-val* (slide-int :val (floor *some-val*) :min 0 :max 200
                                     :step 10)))

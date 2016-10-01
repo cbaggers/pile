@@ -1,4 +1,5 @@
 (in-package :pile)
+(in-readtable :fn.reader)
 
 (defvar +ctx+ 'nk-ctx)
 
@@ -345,6 +346,32 @@
            (getf col 'raw-bindings-nuklear::g)
            (getf col 'raw-bindings-nuklear::b)
            (getf col 'raw-bindings-nuklear::a)))
+
+;;------------------------------------------------------------
+
+(defmacro line-graph (&key data (min -1s0) (max 1s0))
+  `(%line-graph ,+ctx+ ,data ,min ,max))
+
+(defun %line-graph (context data min max)
+  (let ((count (length data))
+        (nk-ptr (pile-nk-ptr context)))
+    (when (= 1 (nk-chart-begin nk-ptr nk-chart-lines count
+                               (float min) (float max)))
+      (unwind-protect (map nil λ(nk-chart-push nk-ptr (float _)) data)
+        (nk-chart-end nk-ptr)))))
+
+;;------------------------------------------------------------
+
+(defmacro column-graph (&key data (min -1s0) (max 1s0))
+  `(%column-graph ,+ctx+ ,data ,min ,max))
+
+(defun %column-graph (context data min max)
+  (let ((count (length data))
+        (nk-ptr (pile-nk-ptr context)))
+    (when (= 1 (nk-chart-begin nk-ptr nk-chart-column count
+                               (float min) (float max)))
+      (unwind-protect (map nil λ(nk-chart-push nk-ptr (float _)) data)
+        (nk-chart-end nk-ptr)))))
 
 ;;------------------------------------------------------------
 
