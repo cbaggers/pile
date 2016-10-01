@@ -15,6 +15,7 @@
     (setf *initd* t)))
 
 (defparameter *some-val* 10)
+(defparameter *some-color* (v! 28 45 62 1))
 
 (defui test-win (title x y)
   (in-panel (:title title :bounds (v! x y 210s0 150s0))
@@ -40,7 +41,7 @@
       (in-row (:height 20s0)
         (property-int :text "Thing" :min 0 :max 100 :step 10))
       (in-row (:height 120s0)
-        (color-picker :color (v! 28 45 62 0) :format :rgba)))
+        (setf *some-color* (color-picker :color *some-color* :format :rgba))))
 
     (test-win :title "more" :x 50s0 :y 300s0)
 

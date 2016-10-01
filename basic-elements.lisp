@@ -71,9 +71,30 @@
                (pile-pop ,+ctx+)
                (nk-end (pile-nk-ptr ,+ctx+)))))))))
 
+(defmacro in-canvas-panel ((&key title (bounds (cepl:v! 50s0 50s0 200s0 250s0))
+                                 (flags '(:border :movable :closable :scalable
+                                          :minimizable :title)))
+                           &body body)
+  `(in-panel (:title ,title :bounds ,bounds :flags ,flags)
+     (%with-canvas
+       ,@body)))
+
+(defmacro %with-canvas (&body body)
+  (with-gensyms (canvas)
+    `(with-foreign-object (,canvas nk-command-buffer)
+       (setf ,canvas (nk-window-get-canvas (pile-nk-ptr ,+ctx+)))
+       (unwind-protect
+            (progn (pile-push ,canvas ,+ctx+)
+                   ,@body)
+         (pile-pop ,+ctx+)))))
+
 ;; This sucks, make proper readers etc
 (defun vec4-as-rect (v4)
-  `(h ,(v:w v4) w ,(v:z v4) y ,(v:y v4) x ,(v:x v4)))
+  `(raw-bindings-nuklear::h
+    ,(v:w v4)
+    raw-bindings-nuklear:w ,(v:z v4)
+    raw-bindings-nuklear:y ,(v:y v4)
+    raw-bindings-nuklear::x ,(v:x v4)))
 
 (defun window-flags (flags)
   (labels ((val (x f)
@@ -163,10 +184,27 @@
   `(%color-picker ,+ctx+ ,color ,format))
 
 (defun %color-picker (context color format)
-  (declare (ignore format))
   (assert (typep (pile-head context) 'pile-site-element))
   ;; HMM we really need to be populating these color more efficiently
-  color)
+  (let ((format (ecase format
+                  (:rgb nk-rgb)
+                  (:rgba nk-rgba)))
+        (col (vec4-as-color color)))
+    (color-as-vec4 (nk-color-picker (pile-nk-ptr context) col format))))
+
+(defun vec4-as-color (v4)
+  `(raw-bindings-nuklear::r
+    ,(floor (v:x v4))
+    raw-bindings-nuklear:g ,(floor (v:y v4))
+    raw-bindings-nuklear:b ,(floor (v:z v4))
+    raw-bindings-nuklear::a ,(floor (v:w v4))))
+
+
+(defun color-as-vec4 (col)
+  (cepl:v! (getf col 'raw-bindings-nuklear::r)
+           (getf col 'raw-bindings-nuklear::g)
+           (getf col 'raw-bindings-nuklear::b)
+           (getf col 'raw-bindings-nuklear::a)))
 
 ;;------------------------------------------------------------
 
