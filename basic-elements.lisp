@@ -151,6 +151,12 @@
 
 ;;------------------------------------------------------------
 
+(defun calc-alignment (alignment)
+  (ecase alignment
+    (:left nk-text-left)
+    (:centered nk-text-centered)
+    (:right nk-text-right)))
+
 (defmacro label (&key text (alignment :left))
   (assert text)
   `(%label ,+ctx+ ,text ,alignment))
@@ -158,12 +164,34 @@
 (defun %label (context text alignment)
   (assert text)
   (assert (typep (pile-head context) 'pile-site-element))
-  (let ((alignment (ecase alignment
-                     (:left nk-text-left)
-                     (:centered nk-text-centered)
-                     (:right nk-text-right))))
+  (let ((alignment (calc-alignment alignment)))
     (with-foreign-string (c-str text)
       (nk-label (pile-nk-ptr context) c-str alignment))))
+
+;;------------------------------------------------------------
+
+(defmacro text (&key val (alignment :left))
+  (assert val)
+  `(%text ,+ctx+ ,val ,alignment))
+
+(defun %text (context val alignment)
+  (assert (stringp val))
+  (assert (typep (pile-head context) 'pile-site-element))
+  (with-foreign-string (c-str val)
+    (nk-text (pile-nk-ptr context) c-str (length val)
+             (calc-alignment alignment))))
+
+;;------------------------------------------------------------
+
+(defmacro text-wrap (&key val)
+  (assert val)
+  `(%text-wrap ,+ctx+ ,val))
+
+(defun %text-wrap (context val)
+  (assert (stringp val))
+  (assert (typep (pile-head context) 'pile-site-element))
+  (with-foreign-string (c-str val)
+    (nk-text-wrap (pile-nk-ptr context) c-str (length val))))
 
 ;;------------------------------------------------------------
 
@@ -176,6 +204,52 @@
   (assert (typep (pile-head context) 'pile-site-element))
   (with-foreign-string (c-str text)
     (= 1 (nk-button-label (pile-nk-ptr context) c-str))))
+
+;;------------------------------------------------------------
+
+(defmacro option-label (&key text active)
+  (assert text)
+  `(%option-label ,+ctx+ ,text ,active))
+
+(defun %option-label (context text active)
+  (assert text)
+  (assert (typep (pile-head context) 'pile-site-element))
+  (with-foreign-string (c-str text)
+    (= 1 (nk-option-label (pile-nk-ptr context) c-str (if active 1 0)))))
+
+;;------------------------------------------------------------
+
+(defmacro check-label (&key text active)
+  (assert text)
+  `(%check-label ,+ctx+ ,text ,active))
+
+(defun %check-label (context text active)
+  (assert text)
+  (assert (typep (pile-head context) 'pile-site-element))
+  (with-foreign-string (c-str text)
+    (= 1 (nk-check-label (pile-nk-ptr context) c-str (if active 1 0)))))
+
+;;------------------------------------------------------------
+
+(defmacro slide-int
+    (&key val (min -100) (max 100) (step 2))
+  `(%slide-int ,+ctx+ ,val ,min ,max ,step))
+
+(defun %slide-int (context val min max step)
+  (assert (typep (pile-head context) 'pile-site-element))
+  (let ((lisp-val (floor (or val min))))
+    (nk-slide-int (pile-nk-ptr context) min lisp-val max step)))
+
+;;------------------------------------------------------------
+
+(defmacro slide-float
+    (&key val (min -100) (max 100) (step 2))
+  `(%slide-float ,+ctx+ ,val ,min ,max ,step))
+
+(defun %slide-float (context val min max step)
+  (assert (typep (pile-head context) 'pile-site-element))
+  (let ((lisp-val (float (or val min))))
+    (nk-slide-float (pile-nk-ptr context) min lisp-val max step)))
 
 ;;------------------------------------------------------------
 

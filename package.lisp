@@ -10,6 +10,8 @@
   (:export :make-root-element :reshape :in-ui :render-ui
            :in-input :in-panel :in-row :in-row-static
            :property-int :property-float :property-double
-           :button-label :color-picker :label
+           :slide-int :slide-float :slide-double
+           :button-label :color-picker :label :progress
+           :option-label :check-label :text :text-wrap
            :step-host-&-dispatch-events :dispatch-events
            :defui))
