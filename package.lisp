@@ -15,4 +15,4 @@
            :option-label :check-label :text :text-wrap
            :line-graph :column-graph
            :step-host-&-dispatch-events :dispatch-events
-           :defui ))
+           :defui :with-ui-context :ui-call))

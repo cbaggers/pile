@@ -33,10 +33,19 @@
 ;; Maybe we allow the user to pass an existing the root element OR a context
 ;; this way we can make it easy to pass control to regular functions
 
+(defmacro with-ui-context (context &body body)
+  `(let ((,+ctx+ ,context))
+     ,@body))
+
 (defmacro in-ui (root-element &body body)
-  `(let ((,+ctx+ (make-context-from-root-element ,root-element)))
+  `(with-ui-context (make-context-from-root-element ,root-element)
      (unwind-protect (progn ,@body)
        (nk-clear (pile-nk-ptr ,+ctx+)))))
+
+;;------------------------------------------------------------
+
+(defmacro ui-call (function &rest args)
+  `(funcall ,function ,+ctx+ ,@args))
 
 ;;------------------------------------------------------------
 
