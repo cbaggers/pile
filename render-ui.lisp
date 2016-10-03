@@ -87,18 +87,26 @@
                    (with-foreign-slots ((elem-count (:pointer clip-rect)) cmd
                                         (:struct nk-draw-command))
                      (when (> elem-count 0)
-                       (with-foreign-slots ((x y w h) clip-rect (:struct nk-rect))
-                         (declare (type (single-float 0s0 #.(float #xffff 0s0))
-                                        x y w h))
-                         (gl:scissor (* x scale-x) (* (- vh (+ y h)) scale-y)
-                                     (* w scale-x) (* h scale-y)))
-                       (setf (cepl:buffer-stream-length vert-stream) elem-count)
-                       (setf (cepl.types::buffer-stream-start vert-stream) offset)
-                       (cepl:map-g #'pile.renderer:nk-basic
-                                   vert-stream
-                                   :tex (font-sampler render-data)
-                                   :proj-mtx ortho)
-                       (incf offset elem-count)))
+                       (with-foreign-slots ((raw-bindings-nuklear::x
+                                             raw-bindings-nuklear::y
+                                             raw-bindings-nuklear::w
+                                             raw-bindings-nuklear::h)
+                                            clip-rect (:struct nk-rect))
+                         (let ((x raw-bindings-nuklear::x)
+                               (y raw-bindings-nuklear::y)
+                               (w raw-bindings-nuklear::w)
+                               (h raw-bindings-nuklear::h))
+                           (declare (type (single-float 0s0 #.(float #xffff 0s0))
+                                          x y w h))
+                           (gl:scissor (* x scale-x) (* (- vh (+ y h)) scale-y)
+                                       (* w scale-x) (* h scale-y))
+                           (setf (cepl:buffer-stream-length vert-stream) elem-count)
+                           (setf (cepl.types::buffer-stream-start vert-stream) offset)
+                           (cepl:map-g #'pile.renderer:nk-basic
+                                       vert-stream
+                                       :tex (font-sampler render-data)
+                                       :proj-mtx ortho))
+                         (incf offset elem-count))))
                    (setf cmd (nk--draw-next cmd (cmds render-data) nk-ctx))))))
           ;;
           (gl:disable :scissor-test :blend)
