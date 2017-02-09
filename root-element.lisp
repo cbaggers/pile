@@ -97,7 +97,7 @@
                                     :vert-stream vert-stream)))
     (nk-buffer-init-default (cmds result))
     (multiple-value-bind (w h)
-        (sdl2:get-window-size cepl.context::*GL-window*)
+        (sdl2:get-window-size cepl.context::*gl-window*)
       (setf (cepl:viewport-resolution (viewport result))
             (cepl:v! w h)))
     result))
