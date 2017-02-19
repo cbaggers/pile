@@ -100,8 +100,7 @@
 
 ;; This sucks, make proper readers etc
 (defun vec4-as-rect (v4)
-  `(raw-bindings-nuklear::h
-    ,(v:w v4)
+  `(raw-bindings-nuklear::h ,(v:w v4)
     raw-bindings-nuklear:w ,(v:z v4)
     raw-bindings-nuklear:y ,(v:y v4)
     raw-bindings-nuklear::x ,(v:x v4)))

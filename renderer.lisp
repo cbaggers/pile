@@ -20,6 +20,7 @@
     ))
 
 (def-g-> nk-basic ()
-  (nk-vert nk-cepl-vertex) nk-frag)
+  (nk-vert nk-cepl-vertex)
+  (nk-frag :vec2 :vec4))
 
 ;;----------------------------------------------------------------------
