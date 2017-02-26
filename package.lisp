@@ -15,4 +15,13 @@
            :option-label :check-label :text :text-wrap
            :line-graph :column-graph
            :step-host-&-dispatch-events :dispatch-events
-           :defui :with-ui-context :ui-call))
+           :defui :with-ui-context :ui-call
+           ;; tweak
+           :tweak-begin
+           :tweak-finalize
+           :tweak-render
+           :with-tweak-no-finalize
+           :with-tweak-no-render
+           :with-tweak
+           :tweak
+           ))

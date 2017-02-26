@@ -23,14 +23,16 @@
                       offset 0))
     vl))
 
+(defun %render-ui (context)
+  (%render-ui-from-root (pile-root context)))
+
 (let ((ortho (cepl:m! 0  0  0 -1
                       0  0  0  1
                       0  0 -1  0
                       0  0  0  1)))
-  (defun %render-ui (context)
+  (defun %render-ui-from-root (root-elem)
     (declare (optimize speed))
-    (let* ((nk-ctx (pile-nk-ptr context))
-           (root-elem (pile-root context))
+    (let* ((nk-ctx (root-element-ptr root-elem))
            (render-data (root-element-render-data root-elem)))
       (cepl:with-viewport (viewport render-data)
         (gl:blend-equation :func-add)
