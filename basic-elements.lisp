@@ -39,6 +39,7 @@
 
 (defmacro in-ui (root-element &body body)
   `(with-ui-context (make-context-from-root-element ,root-element)
+     (in-input (replay-events (pile-context-root ,+ctx+)))
      (unwind-protect (progn ,@body)
        (nk-clear (pile-nk-ptr ,+ctx+)))))
 

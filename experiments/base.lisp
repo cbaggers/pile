@@ -34,9 +34,9 @@
 
 (defun step-example ()
   (clear)
+  (step-host)
+  ;;
   (in-ui *ui-root*
-    (in-input
-      (step-host-&-dispatch-events))
     (in-panel (:title "Nuklear UI!" :bounds (v! 200s0 40s0 210s0 250s0))
       (in-row-static (:height 30s0 :item-width 180)
         (when (button-label :text "In Lisp!")
@@ -63,17 +63,16 @@
         (label :text "A picker, so it is"))
       (in-row (:height 220s0)
         (setf *some-color* (color-picker :color *some-color* :format :rgba))))
-
+    ;;
     (test-win :title "MoreWindows" :x 50s0 :y 300s0)
-
     (test-win :title "yes" :x 250s0 :y 400s0)
-
-    (render-ui)
-    (cepl:swap)
-    (gl:clear-color (/ (v:x *some-color*) 255)
-                    (/ (v:y *some-color*) 255)
-                    (/ (v:z *some-color*) 255)
-                    0)))
+    ;;
+    (render-ui))
+  (cepl:swap)
+  (gl:clear-color (/ (v:x *some-color*) 255)
+                  (/ (v:y *some-color*) 255)
+                  (/ (v:z *some-color*) 255)
+                  0))
 
 (defun run-loop (&optional (count 0))
   (assert (>= count 0))
@@ -95,5 +94,5 @@
   (setf *running* nil))
 
 (defun system-listener (event timestamp tpref)
-  (declare (ignore event timestamp))
+  (declare (ignore event timestamp tpref))
   (stop-loop))

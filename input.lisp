@@ -17,7 +17,7 @@
 (defun replay-events (root-element)
   (let ((events (root-element-cached-events root-element)))
     (loop :for (func . args) :across events :do
-       (funcall func args))
+       (apply func (cons (pile-nk-ptr-element-ptr root-element) args)))
     (setf (fill-pointer events) 0)))
 
 ;;------------------------------------------------------------
@@ -34,12 +34,9 @@
   (declare (ignore timestamp))
   (let ((nk-ptr (pile::pile-nk-ptr-element-ptr root-element)))
     ;;
-    (if (and tpref (typep tpref 'root-element))
-        (multiple-value-bind (x y) (unpack-skitter-mouse-pos nk-ptr event)
-          (nk-input-motion nk-ptr x y))
-        (cache-event root-element #'nk-input-motion
-                     (multiple-value-list
-                      (unpack-skitter-mouse-pos nk-ptr event))))))
+    (cache-event root-element #'nk-input-motion
+                 (multiple-value-list
+                  (unpack-skitter-mouse-pos nk-ptr event)))))
 
 (defun unpack-skitter-mouse-pos (nk-ptr event)
   (let* ((mouse-ptr (c-ptr nk-ptr (:struct nk-context) input mouse))
@@ -70,14 +67,9 @@
 (defun mouse-button-listener (root-element event timestamp tpref)
   (declare (ignore timestamp))
   (let ((nk-ptr (pile::pile-nk-ptr-element-ptr root-element)))
-    (if (and tpref (typep tpref 'root-element))
-        (multiple-value-bind (nk-id x y down)
-            (unpack-skitter-mouse-button event)
-          (when nk-id
-            (nk-input-button nk-ptr nk-id x y down)))
-        (cache-event root-element #'nk-input-button
-                     (multiple-value-list
-                      (unpack-skitter-mouse-button event))))))
+    (cache-event root-element #'nk-input-button
+                 (multiple-value-list
+                  (unpack-skitter-mouse-button event)))))
 
 (defun unpack-skitter-mouse-button (event)
   (let* ((pos (skitter:xy-pos-vec (skitter:mouse-pos (skitter:mouse 0))))

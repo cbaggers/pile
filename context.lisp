@@ -19,6 +19,7 @@
   (pile-context-root context))
 
 (defun pile-nk-ptr (context)
+  "Pointer to the root element owned by the context"
   (pile-nk-ptr-element-ptr (pile-root context)))
 
 (defun context-head-index (context)
