@@ -205,6 +205,18 @@
 
 ;;------------------------------------------------------------
 
+(defmacro text-input (&key max-length foreign-str
+                        str-cursor (nk-filter "nk_filter_default"))
+  `(%text-input ,+ctx+ ,max-length ,foreign-str
+                ,str-cursor ,nk-filter))
+
+(defun %text-input (context max-length foreign-str
+                    str-cursor nk-filter)
+  (nk-edit-string (pile-nk-ptr context) nk-edit-field foreign-str
+                  str-cursor max-length (cffi:foreign-symbol-pointer nk-filter)))
+
+;;------------------------------------------------------------
+
 (defmacro button-label (&key text)
   (assert text)
   `(%button-label ,+ctx+ ,text))
