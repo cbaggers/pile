@@ -58,9 +58,21 @@
 ;;------------------------------------------------------------
 
 (defun keyboard-listener (root-element event timestamp tpref)
-  (declare (ignore root-element event timestamp tpref))
-  ;;(livesupport:peek event)
-  )
+  (declare (ignore timestamp tpref))
+  (let* ((nk-ptr (pile::pile-nk-ptr-element-ptr root-element))
+         (pressed (skitter:button-down-p event))
+         (key-id (skitter.sdl2.keys:key.id event)))
+    (flet ((cache-input-key (key)
+               (cache-event root-element #'nk-input-key
+                            (list key (convert-to-foreign pressed :boolean)))))
+      (case (sdl2:scancode-symbol key-id)
+        (:scancode-return (cache-input-key NK-KEY-ENTER))
+        (:scancode-backspace (cache-input-key NK-KEY-BACKSPACE))
+        (:scancode-left (cache-input-key NK-KEY-LEFT))
+        (:scancode-right (cache-input-key NK-KEY-RIGHT))
+        (t (when pressed
+             (cache-event root-element #'nk-input-unicode
+                          (list (sdl2:get-key-from-scancode key-id)))))))))
 
 ;;------------------------------------------------------------
 
