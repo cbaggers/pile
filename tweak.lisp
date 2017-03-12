@@ -2,7 +2,7 @@
 (in-readtable :fn.reader)
 
 (defvar *tweak-root* nil)
-(defvar *tweak-ctx*)
+(defvar *tweak-ctx* nil)
 (defvar *tweaking* nil)
 (defvar *tweak-count*)
 
@@ -73,6 +73,24 @@
   (with-ui-context *tweak-ctx*
     (in-row (:height 20s0)
       (property-float :text "val" :val object :min -1000f0 :max 1000f0 :step 1))))
+
+(defmethod tweak-object ((object array))
+  (typecase object
+    (rtg-math.types:vec3 (tweak-vec3 object))
+    (t (tweak-unknown object))))
+
+(defmethod tweak-unknown (object)
+  (with-ui-context *tweak-ctx*
+    (in-row (:height 20s0)
+      (label :text "A picker, so it is"))))
+
+(defmethod tweak-vec3 (object)
+  (with-ui-context *tweak-ctx*
+    (in-row (:height 20s0)
+      (rtg-math:v!
+       (property-float :text "x" :val (v:x object) :min -100f0 :max 100f0 :step 0.1)
+       (property-float :text "y" :val (v:y object) :min -100f0 :max 100f0 :step 0.1)
+       (property-float :text "z" :val (v:z object) :min -100f0 :max 100f0 :step 0.1)))))
 
 (defun tweak-inner (value setter)
   (error "Implement me! ~a ~a" value setter)

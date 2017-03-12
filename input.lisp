@@ -25,7 +25,7 @@
 (defun window-size-callback (root-element event timestamp tpref)
   (declare (ignore timestamp tpref))
   (let ((new-dimensions (skitter:size-2d-vec event)))
-    (print new-dimensions)
+    ;;(print new-dimensions)
     (pile:reshape root-element new-dimensions)))
 
 ;;------------------------------------------------------------
