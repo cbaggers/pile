@@ -22,46 +22,41 @@
 
 ;;------------------------------------------------------------
 
-(defun window-size-callback (root-element event timestamp tpref)
-  (declare (ignore timestamp tpref))
-  (let ((new-dimensions (skitter:size-2d-vec event)))
-    ;;(print new-dimensions)
-    (pile:reshape root-element new-dimensions)))
+(defun window-size-callback (root-element new-dimensions)
+  ;;(print new-dimensions)
+  (pile:reshape root-element (v! new-dimensions)))
 
 ;;------------------------------------------------------------
 
-(defun mouse-pos-listener (root-element event timestamp tpref)
+(defun mouse-pos-listener (root-element pos)
   (declare (ignore timestamp))
   (let ((nk-ptr (pile::pile-nk-ptr-element-ptr root-element)))
     ;;
     (cache-event root-element #'nk-input-motion
                  (multiple-value-list
-                  (unpack-skitter-mouse-pos nk-ptr event)))))
+                  (unpack-skitter-mouse-pos nk-ptr pos)))))
 
-(defun unpack-skitter-mouse-pos (nk-ptr event)
+(defun unpack-skitter-mouse-pos (nk-ptr pos)
   (let* ((mouse-ptr (c-ptr nk-ptr (:struct nk-context) input mouse))
-         (grabbed (c-val mouse-ptr (:struct nk-mouse) grabbed)))
+         (grabbed (c-val mouse-ptr (:struct nk-mouse) grabbed))
+         (mouse (mouse 0)))
     ;;
     (if (= grabbed 1)
         (let* ((prev-ptr (c-ptr mouse-ptr (:struct nk-mouse) prev))
                (prev-x (c-val prev-ptr (:struct nk-vec2) x))
                (prev-y (c-val prev-ptr (:struct nk-vec2) y))
-               (delta (skitter:xy-pos-relative event))
+               (delta (mouse-move mouse))
                (new-x (floor (+ prev-x (v:x delta))))
                (new-y (floor (+ prev-y (v:y delta)))))
           (values new-x new-y))
-        (let* ((pos (skitter:xy-pos-vec event))
-               (x (floor (v:x pos)))
+        (let* ((x (floor (v:x pos)))
                (y (floor (v:y pos))))
           (values x y)))))
 
 ;;------------------------------------------------------------
 
-(defun keyboard-listener (root-element event timestamp tpref)
-  (declare (ignore timestamp tpref))
-  (let* ((nk-ptr (pile::pile-nk-ptr-element-ptr root-element))
-         (pressed (skitter:button-down-p event))
-         (key-id (skitter.sdl2.keys:key.id event)))
+(defun keyboard-listener (root-element pressed key-id)
+  (let* ((nk-ptr (pile::pile-nk-ptr-element-ptr root-element)))
     (flet ((cache-input-key (key)
                (cache-event root-element #'nk-input-key
                             (list key (convert-to-foreign pressed :boolean)))))
@@ -76,21 +71,19 @@
 
 ;;------------------------------------------------------------
 
-(defun mouse-button-listener (root-element event timestamp tpref)
+(defun mouse-button-listener (root-element data index)
   (declare (ignore timestamp))
   (let ((nk-ptr (pile::pile-nk-ptr-element-ptr root-element)))
     (cache-event root-element #'nk-input-button
                  (multiple-value-list
-                  (unpack-skitter-mouse-button event)))))
+                  (unpack-skitter-mouse-button data index)))))
 
-(defun unpack-skitter-mouse-button (event)
-  (let* ((pos (skitter:xy-pos-vec (skitter:mouse-pos (skitter:mouse 0))))
-         (down-p (skitter:button-down-p event))
-         (b-id (cepl.skitter.sdl2:mouse.button-id event))
+(defun unpack-skitter-mouse-button (down-p b-id)
+  (let* ((pos (mouse-pos (mouse 0)))
          (nk-id (cepl-utils:case= b-id
-                  (cepl.skitter.sdl2:mouse.left nk-button-left)
-                  (cepl.skitter.sdl2:mouse.middle nk-button-middle)
-                  (cepl.skitter.sdl2:mouse.right nk-button-right))))
+                  (mouse.left nk-button-left)
+                  (mouse.middle nk-button-middle)
+                  (mouse.right nk-button-right))))
     (values nk-id (floor (v:x pos)) (floor (v:y pos)) (if down-p 1 0))))
 
 ;;------------------------------------------------------------

@@ -14,18 +14,26 @@
                   :ptr nk-ctx
                   :render-data render-data
                   :atlas atlas))
-           (ws-listener (lambda (x y z) (mouse-pos-listener elem x y z)))
-           (mp-listener (lambda (x y z) (mouse-button-listener elem x y z)))
-           (mb-listener (lambda (x y z) (keyboard-listener elem x y z)))
-           (kb-listener (lambda (x y z) (window-size-callback elem x y z))))
+           (ws-listener (lambda (data &rest ignored)
+                          (declare (ignore ignored))
+                          (window-size-callback elem data)))
+           (mp-listener (lambda (data &rest ignored)
+                          (declare (ignore ignored))
+                          (mouse-pos-listener elem data)))
+           (mb-listener (lambda (pressed source index &rest ignored)
+                          (declare (ignore source ignored))
+                          (mouse-button-listener elem pressed index)))
+           (kb-listener (lambda (pressed source key-id &rest ignored)
+                          (declare (ignore source ignored))
+                          (keyboard-listener elem pressed key-id))))
       (setf (root-element-window-size-listener elem) ws-listener
             (root-element-mouse-pos-listener elem) mp-listener
             (root-element-mouse-button-listener elem) mb-listener
             (root-element-keyboard-listener elem) kb-listener)
-      (skitter:listen-to ws-listener (skitter:mouse 0) :pos)
-      (skitter:listen-to mp-listener (skitter:mouse 0) :button)
-      (skitter:listen-to mb-listener (skitter:keyboard 0) :button)
-      (skitter:listen-to kb-listener (skitter:window 0) :size)
+      (listen-to ws-listener (mouse 0) :pos)
+      (listen-to mp-listener (mouse 0) :button)
+      (listen-to mb-listener (keyboard 0) :button)
+      (listen-to kb-listener (window 0) :size)
       elem)))
 
 ;;------------------------------------------------------------

@@ -10,8 +10,8 @@
       (cepl:repl))
     (setf *ui-root* (pile:make-root-element))
     (gl:clear-color 0.109 0.188 0.243 0s0)
-    (skitter:listen-to (lambda (x y z) (system-listener x y z))
-                       skitter:+system+ :quitting)
+    (listen-to (lambda (data &rest ignored) (system-listener data))
+               +window-manager+ :quitting)
     (setf *initd* t)))
 
 (defparameter *some-val* 10)
