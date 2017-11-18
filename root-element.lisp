@@ -21,7 +21,7 @@
 ;; constructor is in basic-elements.lisp
 
 (defun make-context-from-root-element (root-elem)
-  (assert cepl.context:*gl-context*)
+  (assert (cepl:gl-initialized-p (cepl-context)))
   (%make-pile-context :root root-elem))
 
 

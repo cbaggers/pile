@@ -6,7 +6,7 @@
 
 (defun init-all ()
   (unless *initd*
-    (unless cepl.context:*gl-context*
+    (when (cepl.lifecycle:uninitialized-p)
       (cepl:repl))
     (setf *ui-root* (pile:make-root-element))
     (gl:clear-color 0.109 0.188 0.243 0s0)

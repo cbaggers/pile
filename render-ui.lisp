@@ -39,8 +39,8 @@
         (gl:blend-func :src-alpha :one-minus-src-alpha)
         (gl:enable :scissor-test :blend)
         (cepl-utils:with-setf*
-            ((cepl:depth-test-function cepl.context:*cepl-context*) nil
-             (cepl:cull-face cepl.context:*cepl-context*) nil)
+            ((cepl:depth-test-function (cepl.context:cepl-context)) nil
+             (cepl:cull-face (cepl.context:cepl-context)) nil)
           ;;
           (let ((vert-layout *vert-layout*))
             (with-foreign-object (config '(:struct nk-convert-config))
