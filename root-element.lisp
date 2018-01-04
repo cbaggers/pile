@@ -21,7 +21,7 @@
 ;; constructor is in basic-elements.lisp
 
 (defun make-context-from-root-element (root-elem)
-  (assert (cepl:gl-initialized-p (cepl-context)))
+  (assert (cepl:gl-initialized-p (cepl:cepl-context)))
   (%make-pile-context :root root-elem))
 
 
@@ -97,7 +97,7 @@
                                     :vert-stream vert-stream)))
     (nk-buffer-init-default (cmds result))
     (multiple-value-bind (w h)
-        (sdl2:get-window-size cepl.context::*gl-window*)
+        (cepl:surface-resolution (cepl:current-surface (cepl:cepl-context)))
       (setf (cepl:viewport-resolution (viewport result))
             (cepl:v! w h)))
     result))

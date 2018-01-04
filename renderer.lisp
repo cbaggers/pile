@@ -19,7 +19,7 @@
     ;;    t-col)
     ))
 
-(def-g-> nk-basic ()
+(defpipeline-g nk-basic ()
   (nk-vert nk-cepl-vertex)
   (nk-frag :vec2 :vec4))
 

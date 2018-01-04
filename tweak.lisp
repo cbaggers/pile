@@ -8,7 +8,7 @@
 
 (defun ensure-initialized ()
   (unless *tweak-root*
-    (when (cepl:gl-initialized-p (cepl-context))
+    (when (cepl:gl-initialized-p (cepl:cepl-context))
       (setf *tweak-root* (pile:make-root-element)))))
 
 (defun tweak-begin ()

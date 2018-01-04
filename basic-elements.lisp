@@ -30,10 +30,10 @@
             (root-element-mouse-pos-listener elem) mp-listener
             (root-element-mouse-button-listener elem) mb-listener
             (root-element-keyboard-listener elem) kb-listener)
-      (listen-to ws-listener (mouse 0) :pos)
-      (listen-to mp-listener (mouse 0) :button)
-      (listen-to mb-listener (keyboard 0) :button)
-      (listen-to kb-listener (window 0) :size)
+      (skitter:listen-to ws-listener (skitter:mouse 0) :pos)
+      (skitter:listen-to mp-listener (skitter:mouse 0) :button)
+      (skitter:listen-to mb-listener (skitter:keyboard 0) :button)
+      (skitter:listen-to kb-listener (skitter:window 0) :size)
       elem)))
 
 ;;------------------------------------------------------------
